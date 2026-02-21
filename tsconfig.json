@@ -1,6 +1,28 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "target": "ES2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "types": [
+      "react",
+      "react-native"
+    ],
+    "experimentalDecorators": true,
+    "customConditions": [
+      "react-native"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "babel.config.js",
+    "metro.config.js"
+  ],
+  "extends": "expo/tsconfig.base"
 }
