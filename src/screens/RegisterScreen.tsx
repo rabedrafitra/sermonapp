@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Image
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -39,18 +40,11 @@ export default function RegisterScreen({ navigation }: any) {
 
     setLoading(true);
     try {
-      const res = await fetch(
-       `${API_URL}/api/auth/register`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-          }),
-        }
-      );
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
 
       const data = await res.json();
 
@@ -69,6 +63,16 @@ export default function RegisterScreen({ navigation }: any) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <Image
+          source={require("../../assets/icons/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
       <Text style={styles.title}>Inscription</Text>
 
       <TextInput
@@ -124,10 +128,13 @@ const styles = StyleSheet.create({
     padding: 24,
     justifyContent: "center",
   },
+  logoContainer: { alignItems: "center", marginBottom: 24 },
+  logo: { width: 120, height: 120 },
   title: {
     fontSize: 28,
     fontFamily: "Inter_700Bold",
     marginBottom: 24,
+    textAlign: "center",
   },
   input: {
     borderWidth: 1,
@@ -136,6 +143,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
     fontSize: 16,
+    backgroundColor: "#fff",
   },
   primaryBtn: {
     backgroundColor: "#2563EB",

@@ -23,10 +23,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
-
 const { width } = Dimensions.get('window');
 const MENU_WIDTH = width * 0.78;
-
 const MENU_ITEMS = [
   { label: 'Toriteny rehetra', icon: 'grid-outline' },
   { label: 'SAFIF', icon: 'business-outline' },
@@ -36,68 +34,49 @@ const MENU_ITEMS = [
   { label: 'Vidéos', icon: 'videocam-outline' },
   { label: 'Audios', icon: 'musical-notes-outline' },
 ];
-
-const STORIES = [
-  { id: '1', name: 'Révérend Toky', avatar: 'https://i.pravatar.cc/150?u=catholique', live: false },
-  { id: '2', name: 'Pasteur Martin', avatar: 'https://i.pravatar.cc/150?u=protestant', live: true },
-  { id: '3', name: 'Mr Michel', avatar: 'https://i.pravatar.cc/150?u=charismatique', live: false },
-  { id: '4', name: 'FJKM Mamiratra', avatar: 'https://i.pravatar.cc/150?u=orthodox', live: false },
-];
-
-
-
-
-
-
+// const STORIES = [
+// { id: '1', name: '', avatar: require('../../assets/icon1.png'), live: false },
+// { id: '2', name: '', avatar: require('../../assets/icon2.png'), live: false },
+// { id: '3', name: '', avatar: require('../../assets/icon3.png'), live: false },
+// { id: '4', name: '', avatar: require('../../assets/icon4.png'), live: false },
+// ];
 export default function HomeScreen() {
-
   //NAVIGATION
   const navigation = useNavigation();
-
   //FONTS
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_600SemiBold,
     Inter_700Bold,
   });
-
   const [darkMode, setDarkMode] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [likedPosts, setLikedPosts] = useState(new Set<string>());
   const [searchQuery, setSearchQuery] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const slideAnim = useRef(new Animated.Value(-MENU_WIDTH)).current;
-
   const [selectedCategory, setSelectedCategory] = useState('Toriteny rehetra');
-
   // ✅ POSTS
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
-
+ 
   // ✅ COMMENTAIRES (ICI C’EST BON)
   const [openComments, setOpenComments] = useState<Set<string>>(new Set());
   const [newCommentText, setNewCommentText] = useState<{ [key: string]: string }>({});
   const [commentsByPost, setCommentsByPost] = useState<Record<string, any[]>>({})
-  
+ 
   //AUTH
-
 const [isAuthenticated, setIsAuthenticated] = useState(false);
 const [user, setUser] = useState<any>(null);
-
-
-
   useEffect(() => {
     fetchPosts();
   }, []);
-
   const fetchPosts = async () => {
   try {
     const res = await fetch(`${API_URL}/api/posts`);
     console.log('Status:', res.status);
     const text = await res.text();
     console.log('Response text:', text);
-
     const data = JSON.parse(text);
     const adapted = data.map((post: any) => ({
       ...post,
@@ -113,28 +92,22 @@ const [user, setUser] = useState<any>(null);
     setLoading(false);
   }
 };
-
 //useeffect auth
-
 useEffect(() => {
   const checkAuth = async () => {
     const token = await getToken();
-
     if (!token) {
       setIsAuthenticated(false);
       setUser(null);
       return;
     }
-
     try {
       const res = await fetch(`${API_URL}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
       if (!res.ok) throw new Error("Unauthorized");
-
       const data = await res.json();
       setIsAuthenticated(true);
       setUser(data);
@@ -143,30 +116,25 @@ useEffect(() => {
       setUser(null);
     }
   };
-
   checkAuth();
 }, []);
-
 //AFFICHAGE COMMENTAIRES
-
 const loadComments = async (postId: string) => {
   try {
-const res = await fetch(`${API_URL}/api/posts/${postId}/comments`);
+    const res = await fetch(`${API_URL}/api/posts/${postId}/comments`);
     if (!res.ok) {
       console.error(`Erreur HTTP pour commentaires de ${postId}: ${res.status}`);
-      setCommentsByPost(prev => ({ ...prev, [postId]: [] }));  // Set [] en cas d'erreur
+      setCommentsByPost(prev => ({ ...prev, [postId]: [] })); // Set [] en cas d'erreur
       return;
     }
     const data = await res.json();
-    console.log(`Commentaires chargés pour ${postId}:`, data);  // Log pour déboguer
-    setCommentsByPost(prev => ({ ...prev, [postId]: Array.isArray(data) ? data : [] }));  // Force tableau
+    console.log(`Commentaires chargés pour ${postId}:`, data); // Log pour déboguer
+    setCommentsByPost(prev => ({ ...prev, [postId]: Array.isArray(data) ? data : [] })); // Force tableau
   } catch (error) {
     console.error("Erreur loadComments:", error);
     setCommentsByPost(prev => ({ ...prev, [postId]: [] }));
   }
 };
-
-
 const toggleComments = (postId: string) => {
   setOpenComments(prev => {
     const next = new Set(prev)
@@ -179,21 +147,16 @@ const toggleComments = (postId: string) => {
     return next
   })
 }
-
-
 // POST COMMENT
 const postComment = async (postId: string) => {
   const content = newCommentText[postId];
   if (!content) return;
-
   try {
     const token = await getToken();
-
     if (!token) {
       console.error("Token manquant");
       return;
     }
-
     const res = await fetch(`${API_URL}/api/posts/${postId}/comments`, {
       method: "POST",
       headers: {
@@ -202,48 +165,37 @@ const postComment = async (postId: string) => {
       },
       body: JSON.stringify({ content }),
     });
-
-    const text = await res.text();  // 🔹 Récupérer le texte brut
+    const text = await res.text(); // 🔹 Récupérer le texte brut
     console.log("Response POST comment:", text);
-
     if (!res.ok) {
       throw new Error(`Erreur API: ${res.status} - ${text}`);
     }
-
     const newComment = JSON.parse(text);
-
     setCommentsByPost(prev => ({
       ...prev,
       [postId]: [...(prev[postId] || []), newComment],
     }));
     setNewCommentText(prev => ({ ...prev, [postId]: "" }));
-
   } catch (error) {
     console.error("Erreur postComment:", error);
   }
 };
-
 //LIKES
-
 const toggleLike = async (postId: string) => {
   const userId = "123"; // Remplacer par l’ID réel connecté
-
   // Optimistic UI
   setLikedPosts(prev => {
     const newSet = new Set(prev);
     newSet.has(postId) ? newSet.delete(postId) : newSet.add(postId);
     return newSet;
   });
-
   try {
     const res = await fetch(`${API_URL}/api/posts/${postId}/like`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId }),
     });
-
     const data = await res.json();
-
     // Met à jour le compteur de likes et l'état local
     setPosts(prev =>
       prev.map(post =>
@@ -252,7 +204,6 @@ const toggleLike = async (postId: string) => {
           : post
       )
     );
-
     setLikedPosts(prev => {
       const newSet = new Set(prev);
       data.liked ? newSet.add(postId) : newSet.delete(postId);
@@ -262,45 +213,34 @@ const toggleLike = async (postId: string) => {
     console.error("Erreur like post:", error);
   }
 };
-
-
   // ==========================
-
   const colors = {
     background: darkMode ? '#001F3F' : '#E0F7FA',
-    card: darkMode ? '#003366' : '#FFFFFF',
+    card: darkMode ? 'rgba(0,31,63,0.85)' : 'rgba(255,255,255,0.2)',
     primary: '#00BFFF',
     text: darkMode ? '#E0F7FA' : '#001F3F',
     muted: darkMode ? '#87CEEB' : '#4682B4',
-    border: darkMode ? '#004080' : '#B0E0E6',
-    selectedBg: darkMode ? '#0066CC' : '#F0F8FF',
-    overlay: darkMode ? 'rgba(0,0,0,0.75)' : 'rgba(0,0,0,0.5)',
-    audioBg: darkMode ? '#003366' : '#E0F7FA',
+    border: darkMode ? '#004080' : 'rgba(176,224,230,0.3)',
+    selectedBg: darkMode ? 'rgba(0,102,204,0.85)' : 'rgba(240,248,255,0.2)',
+    overlay: darkMode ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.3)',
+    audioBg: darkMode ? 'rgba(0,51,102,0.85)' : 'rgba(224,247,250,0.2)',
     accent: '#EF4444',
     white: '#FFFFFF',
   };
-
-
-
   const openMenu = () => {
     setIsMenuOpen(true);
     Animated.timing(slideAnim, { toValue: 0, duration: 280, useNativeDriver: true }).start();
   };
-
   const closeMenu = () => {
     Animated.timing(slideAnim, { toValue: -MENU_WIDTH, duration: 280, useNativeDriver: true }).start(() => setIsMenuOpen(false));
   };
-
-
   const filteredPosts = posts.filter(post => {
     if (selectedCategory === 'Toriteny rehetra') return true;
     if (selectedCategory === 'Vidéos') return post.type === 'video';
     if (selectedCategory === 'Audios') return post.type === 'audio';
     return post.tag === selectedCategory;
   });
-
   const mediaHeight = width * 1.78;
-
   const renderMedia = (post: any) => {
     if (post.type === 'audio') {
       return (
@@ -320,9 +260,7 @@ const toggleLike = async (postId: string) => {
         </View>
       );
     }
-
     if (post.type === 'text') return null;
-
     if (post.type === 'quote') {
       return (
         <ImageBackground source={{ uri: post.image }} style={[styles.media, { height: mediaHeight }]}>
@@ -332,7 +270,6 @@ const toggleLike = async (postId: string) => {
         </ImageBackground>
       );
     }
-
     return (
       <View style={{ height: mediaHeight }}>
         <Image source={{ uri: 'https://picsum.photos/id/1060/300/40' }} style={styles.waveform} resizeMode="contain" />
@@ -345,16 +282,13 @@ const toggleLike = async (postId: string) => {
       </View>
     );
   };
-
   if (!fontsLoaded) {
     return <View style={[styles.loading, { backgroundColor: colors.background }]}><Text style={{ color: colors.text }}>Chargement...</Text></View>;
   }
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={darkMode ? 'light' : 'dark'} />
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesScroll}>
+      {/* <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesScroll}>
         {STORIES.map((story) => (
           <TouchableOpacity key={story.id} style={styles.storyWrapper}>
             <View style={[styles.storyRing, story.live && styles.liveStoryRing]}>
@@ -364,37 +298,47 @@ const toggleLike = async (postId: string) => {
             {story.live && <View style={styles.liveBadge}><Text style={styles.liveText}>LIVE</Text></View>}
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </ScrollView> */}
+<View style={[styles.header, { backgroundColor: colors.card }]}>
+  {/* MENU (décalé à droite) */}
+  <TouchableOpacity onPress={openMenu} style={styles.menuBtn}>
+    <Ionicons name="menu" size={50} color={colors.text} />
+  </TouchableOpacity>
+  {/* LOGO CENTRÉ */}
+  <View style={styles.headerCenter}>
+    <Image
+      source={require('../../assets/icons/logo.png')}
+      style={styles.logo}
+      resizeMode="contain"
+    />
+      <Text style={[styles.appName, { color: colors.text }]}>
+    FaFi-Aina
+  </Text>
 
-      <View style={styles.header}>
-        <TouchableOpacity onPress={openMenu} style={styles.hamburger}>
-          <Ionicons name="menu" size={28} color={colors.text} />
-        </TouchableOpacity>
-        <View style={styles.headerLeft}>
-          <Ionicons name="close-outline" size={34} color={colors.primary} />
-          <Ionicons name="home-outline" size={24} color={colors.muted} />
-
-          <View style={{ marginLeft: 12 }}>
-            <Text style={[styles.title, { color: colors.text }]}>FaFi-Aina</Text>
-            <Text style={[styles.subtitle, { color: colors.muted }]}>Toutes traditions chrétiennes</Text>
-          </View>
-        </View>
-        <Switch value={darkMode} onValueChange={setDarkMode} trackColor={{ false: colors.border, true: colors.primary }} />
-      </View>
-
+  </View>
+  {/* SWITCH PLUS GRAND */}
+  <View style={styles.switchWrapper}>
+    <Switch
+      value={darkMode}
+      onValueChange={setDarkMode}
+      trackColor={{ false: colors.border, true: colors.primary }}
+      thumbColor={darkMode ? '#ffffff' : '#f4f3f4'}
+      style={{ transform: [{ scaleX: 1.3 }, { scaleY: 1.3 }] }}
+    />
+  </View>
+</View>
       <View style={styles.searchContainer}>
         <View style={[styles.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Ionicons name="search" size={20} color={colors.muted} />
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Rechercher un sermon, pasteur ou ..."
+            placeholder="Mitady Toriteny na Fampianarana..."
             placeholderTextColor={colors.muted}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
       </View>
-
       <FlatList
         data={filteredPosts}
         keyExtractor={item => item.id}
@@ -411,27 +355,28 @@ const toggleLike = async (postId: string) => {
                   <Text style={[styles.time, { color: colors.muted }]}>{item.time} • {item.tag}</Text>
                 </View>
               </View>
-
               {renderMedia(item)}
-
               {item.type !== 'audio' && (
                 <View style={styles.cardContent}>
                   <Text style={[styles.cardTitle, { color: colors.text }]}>{item.title}</Text>
-                  <Text style={[styles.excerpt, { color: colors.text }]} numberOfLines={3}>{item.excerpt}</Text>
+                  <Text style={[styles.excerpt, { color: colors.text }]} numberOfLines={5}>{item.excerpt}</Text>
+                  {/* Voir plus */}
+                   {item.type === 'text' && item.excerpt && item.excerpt.length > 50 && (
+                      <TouchableOpacity
+                        onPress={() => navigation.navigate('SermonScreen', { post: item })}
+                      >
+                        <Text style={{ color: colors.primary, marginTop: 4 }}>Voir plus...</Text>
+                      </TouchableOpacity>
+                    )}
                 </View>
               )}
-
               <View style={styles.actions}>
-
-
 <TouchableOpacity onPress={() => toggleComments(item.id)} style={styles.actionBtn}>
   <Ionicons name="chatbubble-outline" size={28} color={colors.muted} />
   <Text style={{ color: colors.muted, marginLeft: 6 }}>
   {(commentsByPost[item.id]?.length ?? 0)}
 </Text>
-
 </TouchableOpacity>
-
 { /* like */}
  <TouchableOpacity onPress={() => toggleLike(item.id)} style={styles.actionBtn}>
     <Ionicons
@@ -441,7 +386,6 @@ const toggleLike = async (postId: string) => {
     />
     <Text style={{ color: colors.muted, marginLeft: 6 }}>{item.likes || 0}</Text>
   </TouchableOpacity>
-
 {/* === Zone de commentaires === */}
 {openComments.has(item.id) && (
   <View style={styles.commentsContainer}>
@@ -455,9 +399,9 @@ const toggleLike = async (postId: string) => {
         </View>
       ))
     ) : (
-      <Text style={{ color: colors.muted }}>Aucun commentaire pour l'instant ou en chargement...</Text>  // Fallback
+      <Text style={{ color: colors.muted }}>Miandry fanehoan-kevitra...</Text> // Fallback
     )}
-{/* 
+{/*
     Zone nouveau commentaire – inchangée */}
     <View style={styles.newCommentRow}>
       <TextInput
@@ -465,7 +409,7 @@ const toggleLike = async (postId: string) => {
         onChangeText={text =>
           setNewCommentText(prev => ({ ...prev, [item.id]: text }))
         }
-        placeholder="Écrire un commentaire..."
+        placeholder="Hiresaka..."
         placeholderTextColor={colors.muted}
         style={[styles.newCommentInput, { color: colors.text, borderColor: colors.border }]}
       />
@@ -488,23 +432,17 @@ const toggleLike = async (postId: string) => {
     </View>
   </View>
 )}
-
-
-
-
               </View>
             </View>
           );
         }}
       />
-
       {isMenuOpen && (
         <TouchableOpacity style={[styles.overlay, { backgroundColor: colors.overlay }]} activeOpacity={1} onPress={closeMenu}>
-          <Animated.View style={[styles.menuContainer, { transform: [{ translateX: slideAnim }], backgroundColor: colors.card }]}>
+          <Animated.View style={[styles.menuContainer, { transform: [{ translateX: slideAnim }], backgroundColor: darkMode ? colors.card : '#FFFFFF' }]}>
             <View style={[styles.menuHeader, { borderBottomColor: colors.border }]}>
-{/* 
+{/*
 STATUS */}
-
     <View style={{ paddingHorizontal: 24, marginBottom: 20 }}>
   {isAuthenticated ? (
     <>
@@ -514,14 +452,13 @@ STATUS */}
       <Text style={{ color: colors.muted, marginBottom: 12 }}>
         {user?.email}
       </Text>
-
       <TouchableOpacity
         onPress={() => {
           navigation.navigate("Profile");
           closeMenu();
         }}
       >
-        <Text style={{ color: colors.primary }}>Voir mon profil</Text>
+        <Text style={{ color: colors.primary }}>Izaho</Text>
       </TouchableOpacity>
     </>
   ) : (
@@ -532,13 +469,12 @@ STATUS */}
       }}
     >
       <Text style={{ color: colors.primary, fontSize: 16 }}>
-        🔐 Se connecter
+        🔐 Hiditra
       </Text>
     </TouchableOpacity>
   )}
 </View>
-
-      {/* 
+      {/*
 STATUS */}
               <Text style={[styles.menuTitle, { color: colors.text }]}>Catégories</Text>
               <TouchableOpacity onPress={closeMenu}>
@@ -560,7 +496,6 @@ STATUS */}
                 </TouchableOpacity>
               );
             })}
-
              {/* LOGOUT — TOUJOURS EN BAS */}
       {isAuthenticated && (
         <TouchableOpacity
@@ -573,23 +508,17 @@ STATUS */}
           style={styles.logoutBtn}
         >
           <Ionicons name="log-out-outline" size={22} color={colors.accent} />
-          <Text style={styles.logoutText}>Se déconnecter</Text>
+          <Text style={styles.logoutText}>Hivoaka</Text>
         </TouchableOpacity>
       )}
-
-
           </Animated.View>
         </TouchableOpacity>
       )}
-
-
-
-      
+     
       <BottomNavbar navigation={navigation} colors={colors} />
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -601,34 +530,27 @@ const styles = StyleSheet.create({
   storyName: { fontSize: 12, marginTop: 6 },
   liveBadge: { position: 'absolute', bottom: 22, backgroundColor: '#EF4444', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 },
   liveText: { color: '#FFFFFF', fontSize: 11, fontWeight: 'bold' },
-
-  hamburger: { padding: 8, marginRight: 8 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
+  hamburger: { padding: 8, marginRight: 2 },
+  // header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
   headerLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   title: { fontSize: 26, fontFamily: 'Inter_700Bold' },
-  subtitle: { fontSize: 14, marginTop: 2 },
-
+  subtitle: { fontSize: 14, marginTop: 1 },
   searchContainer: { paddingHorizontal: 16, marginBottom: 12 },
   searchBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, height: 46, borderRadius: 12, borderWidth: 1 },
   searchInput: { flex: 1, marginLeft: 12, fontSize: 16 },
-
   card: { marginHorizontal: 16, marginVertical: 10, borderRadius: 20, overflow: 'hidden', borderWidth: 1 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', padding: 14 },
   avatar: { width: 46, height: 46, borderRadius: 23, marginRight: 12 },
   author: { fontSize: 17, fontFamily: 'Inter_600SemiBold' },
   time: { fontSize: 14 },
-
   media: { width: '100%', resizeMode: 'cover' },
   playOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.35)' },
   duration: { position: 'absolute', bottom: 16, right: 16, backgroundColor: 'rgba(0,0,0,0.8)', color: '#FFFFFF', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, fontSize: 14 },
-
   quoteOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, backgroundColor: 'rgba(0,0,0,0.55)' },
   quoteText: { color: '#FFFFFF', fontSize: 22, textAlign: 'center', fontFamily: 'Inter_600SemiBold' },
-
   cardContent: { padding: 16 },
   cardTitle: { fontSize: 19, fontFamily: 'Inter_700Bold', marginBottom: 8 },
   excerpt: { fontSize: 16, lineHeight: 24 },
-
   audioContainer: { flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1 },
   audioThumbnail: { width: 70, height: 70, borderRadius: 12 },
   audioInfo: { flex: 1, marginLeft: 16 },
@@ -638,45 +560,37 @@ const styles = StyleSheet.create({
   waveform: { width: 140, height: 28, opacity: 0.7 },
   audioPlayButton: { padding: 8 },
   audioDuration: { position: 'absolute', bottom: 16, right: 16, fontSize: 13 },
-
   actions: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 16, gap: 32 },
   likeButton: { flexDirection: 'row', alignItems: 'center' },
   actionBtn: { flexDirection: 'row', alignItems: 'center' },
-
-  navbar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 68, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', borderTopWidth: 1 },
+  navbar: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 68, flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.3)', borderTopLeftRadius: 24, borderTopRightRadius: 24, shadowColor: '#fff', shadowOpacity: 0.2, shadowRadius: 8, shadowOffset: { width: 0, height: -4 }, elevation: 5 },
   navItem: { alignItems: 'center' },
   navItemActive: { alignItems: 'center' },
   navLabel: { fontSize: 11, marginTop: 4 },
   navLabelActive: { fontSize: 11, fontFamily: 'Inter_600SemiBold', marginTop: 4, color: '#00BFFF' },
-
   overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100 },
   menuContainer: { position: 'absolute', top: 0, bottom: 0, left: 0, width: MENU_WIDTH, borderTopRightRadius: 24, borderBottomRightRadius: 24, paddingTop: 60, shadowColor: '#000', shadowOffset: { width: 4, height: 0 }, shadowOpacity: 0.25, shadowRadius: 20, elevation: 20 },
   menuHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingBottom: 20, borderBottomWidth: 1 },
   menuTitle: { fontSize: 20, fontFamily: 'Inter_700Bold' },
   menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 24, gap: 16 },
   menuLabel: { fontSize: 17 },
-
 commentsContainer: {
   paddingHorizontal: 16,
   paddingTop: 8,
   paddingBottom: 12,
   backgroundColor: 'rgba(0,0,0,0.02)',
 },
-
 comment: {
   marginBottom: 8,
   paddingVertical: 4,
   borderBottomWidth: 0.5,
   borderBottomColor: '#ddd',
 },
-
-
 newCommentRow: {
   flexDirection: 'row',
   alignItems: 'center',
   marginTop: 8,
 },
-
 newCommentInput: {
   flex: 1,
   borderWidth: 1,
@@ -685,15 +599,11 @@ newCommentInput: {
   paddingVertical: 8,
   marginRight: 8,
 },
-
 sendBtn: {
   padding: 6,
 },
-
-
-
   logoutBtn: {
-    marginTop: "auto",     // 🔥 POUSSE EN BAS
+    marginTop: "auto", // 🔥 POUSSE EN BAS
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderTopWidth: 1,
@@ -701,13 +611,41 @@ sendBtn: {
     flexDirection: "row",
     alignItems: "center",
   },
-
   logoutText: {
     color: "#EF4444",
     marginLeft: 12,
     fontSize: 16,
     fontWeight: "600",
   },
-
-
+header: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: 20,
+  paddingVertical: 14,
+},
+/* MENU plus à droite */
+menuBtn: {
+  marginRight: 24, // 👉 pousse le menu vers la droite
+  padding: 6,
+},
+/* Centre réel */
+headerCenter: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+/* LOGO PLUS GRAND */
+logo: {
+  width: 300, // ⬅️ plus large
+  height: 100, // ⬅️ plus haut
+},
+/* Switch plus visible */
+switchWrapper: {
+  marginLeft: 24,
+},
+appName: {
+  fontSize: 22,
+  fontFamily: 'Inter_700Bold',
+  letterSpacing: 1.2,
+},
 });

@@ -6,6 +6,7 @@ import HomeScreen from '../screens/HomeScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import SermonScreen from '../screens/SermonScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -23,6 +24,7 @@ export default function Navigation() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Connexion' }} />
         <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Inscription' }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+        <Stack.Screen name="SermonScreen" component={SermonScreen} options={{ title: 'Sermon' }} />
 
       </Stack.Navigator>
     </NavigationContainer>
