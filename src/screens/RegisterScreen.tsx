@@ -75,27 +75,32 @@ export default function RegisterScreen({ navigation }: any) {
 
       <Text style={styles.title}>Inscription</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Nom complet"
-        value={name}
-        onChangeText={setName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Mot de passe"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+   <TextInput
+  style={styles.input}
+  placeholder="Nom complet"
+  placeholderTextColor="#94A3B8"
+  value={name}
+  onChangeText={setName}
+/>
+
+<TextInput
+  style={styles.input}
+  placeholder="Email"
+  placeholderTextColor="#94A3B8"
+  value={email}
+  onChangeText={setEmail}
+  autoCapitalize="none"
+  keyboardType="email-address"
+/>
+
+<TextInput
+  style={styles.input}
+  placeholder="Mot de passe"
+  placeholderTextColor="#94A3B8"
+  value={password}
+  onChangeText={setPassword}
+  secureTextEntry
+/>
 
       <TouchableOpacity
         style={styles.primaryBtn}

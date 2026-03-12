@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { removeToken } from '../utils/auth';
-import { getToken } from '../utils/auth';
+import { getToken, saveToken } from '../utils/auth';
+import * as Linking from "expo-linking";
 import { API_URL } from "../config/api";
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useRef, useState } from 'react';
@@ -34,12 +35,8 @@ const MENU_ITEMS = [
   { label: 'Vidéos', icon: 'videocam-outline' },
   { label: 'Audios', icon: 'musical-notes-outline' },
 ];
-// const STORIES = [
-// { id: '1', name: '', avatar: require('../../assets/icon1.png'), live: false },
-// { id: '2', name: '', avatar: require('../../assets/icon2.png'), live: false },
-// { id: '3', name: '', avatar: require('../../assets/icon3.png'), live: false },
-// { id: '4', name: '', avatar: require('../../assets/icon4.png'), live: false },
-// ];
+
+
 export default function HomeScreen() {
   //NAVIGATION
   const navigation = useNavigation();
@@ -68,6 +65,42 @@ export default function HomeScreen() {
   //AUTH
 const [isAuthenticated, setIsAuthenticated] = useState(false);
 const [user, setUser] = useState<any>(null);
+
+//GOOGLEAUTH
+useEffect(() => {
+  const handleDeepLink = async ({ url }: { url: string }) => {
+    const { queryParams } = Linking.parse(url);
+
+    if (queryParams?.token) {
+      // ✅ Sauvegarder le JWT
+      await saveToken(queryParams.token as string);
+
+      // ✅ Mettre à jour l’état auth
+      setIsAuthenticated(true);
+
+      // 🔁 Recharger les infos utilisateur
+      try {
+        const res = await fetch(`${API_URL}/api/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${queryParams.token}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+        }
+      } catch (e) {
+        console.error("Erreur récupération user:", e);
+      }
+    }
+  };
+
+  // écouter les redirections OAuth
+  const sub = Linking.addEventListener("url", handleDeepLink);
+
+  return () => sub.remove();
+}, []);
+
   useEffect(() => {
     fetchPosts();
   }, []);
